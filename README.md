@@ -164,21 +164,3 @@ Simulation complete.
 
 Processed events: 42
 Simulation time: 00:12:43
-
-[000004] ALARM main TRIGGERED\
-[000008] DOOR front CLOSED\
-[000009] ALARM main CLEARED
-
-Simulation complete.
-
-Processed events: 42
-Simulation time: 00:12:43
-
-[000004] ALARM main TRIGGERED\
-[000008] DOOR front CLOSED\
-[000009] ALARM main CLEARED
-
-Simulation complete.
-
-Processed events: 42
-Simulation time: 00:12:43
