@@ -34,8 +34,8 @@ const char * event_type_to_string(EventType type){
 
 void event_print(const Event *event){
     
-    const char * eventType = event_type_to_string(event -> type);
+    const char * event_type = event_type_to_string(event -> type);
     const char * time = event -> timestamp;
 
-    printf("%c%c:%c%c:%c%c %s entity = %d\n", time[0], time[1], time[2], time[3], time[4], time[5], eventType, event -> entity_id);
+    printf("%c%c:%c%c:%c%c %s entity = %d\n", time[0], time[1], time[2], time[3], time[4], time[5], event_type, event -> entity_id);
 }
