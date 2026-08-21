@@ -3,8 +3,8 @@ CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -Iinclude
 
 TARGET = build/blackbox.exe
 
-SOURCES = src/main.c src/event.c
-OBJECTS = build/main.o build/event.o
+SOURCES = src/main.c src/event.c src/queue.c
+OBJECTS = build/main.o build/event.o build/queue.o
 
 .PHONY: all run clean
 
@@ -18,6 +18,9 @@ build/main.o: src/main.c include/event.h
 
 build/event.o: src/event.c include/event.h
 	$(CC) $(CFLAGS) -c src/event.c -o build/event.o
+
+build/queue.o: src/queue.c include/queue.h
+	$(CC) $(CFLAGS) -c src/queue.c -o build/queue.o
 
 run: $(TARGET)
 	./$(TARGET)

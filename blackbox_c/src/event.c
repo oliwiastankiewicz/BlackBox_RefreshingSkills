@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "..\include\event.h"
+#include "event.h"
 
 Event event_create(char timestamp[7], EventType type, int entity_id){
     Event event;

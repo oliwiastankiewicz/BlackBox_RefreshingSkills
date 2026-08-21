@@ -10,7 +10,7 @@ typedef enum {
     DOOR_CLOSED,
     ALARM_TRIGGERED,
     ALARM_CLEARED,
-    UNKNOWN
+    INVALID
 } EventType;
 
 typedef struct {
