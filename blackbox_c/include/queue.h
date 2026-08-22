@@ -1,13 +1,13 @@
 #include <stdbool.h>
 #include "event.h"
 
-
 #ifndef QUEUE_H
 #define QUEUE_H
 
 #define MAX_SIZE 5
 
-typedef struct{
+typedef struct
+{
     Event events[MAX_SIZE];
     int front;
     int rear;

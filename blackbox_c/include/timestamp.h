@@ -1,7 +1,8 @@
 #ifndef TIMESTAMP_H
 #define TIMESTAMP_H
 
-typedef struct {
+typedef struct
+{
     int seconds;
     int minutes;
     int hours;
@@ -12,8 +13,8 @@ Timestamp timestamp_initialize();
 
 Timestamp timestamp_get();
 
-void timestamp_advance(Timestamp * timestamp);
+void timestamp_advance(Timestamp *timestamp);
 
-int timestamp_compare(const Timestamp * timestamp, const Timestamp * timestamp_other);
+int timestamp_compare(const Timestamp *timestamp, const Timestamp *timestamp_other);
 
 #endif

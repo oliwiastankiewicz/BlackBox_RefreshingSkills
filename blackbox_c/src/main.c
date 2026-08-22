@@ -3,7 +3,8 @@
 #include "queue.h"
 #include "timestamp.h"
 
-int main(){
+int main()
+{
     printf("BlackBox - Version 1\n\n");
 
     Timestamp clock = timestamp_initialize();
@@ -29,7 +30,7 @@ int main(){
 
     timestamp_advance(&clock);
     Event event_test_7 = event_create(&clock, TEMPERATURE_READING, 6);
-    
+
     event_print(&event_test_1);
     printf("\n");
 
@@ -45,14 +46,16 @@ int main(){
 
     Event popped_event;
 
-    for (int i=0; i<2; i++){
-        if(queue_pop(&queue, &popped_event)){
+    for (int i = 0; i < 2; i++)
+    {
+        if (queue_pop(&queue, &popped_event))
+        {
             printf("Popped: ");
             event_print(&popped_event);
         }
     }
     printf("\n");
-    
+
     queue_push(&queue, event_test_5);
     queue_push(&queue, event_test_6);
     queue_push(&queue, event_test_7);

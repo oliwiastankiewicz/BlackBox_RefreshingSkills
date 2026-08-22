@@ -6,7 +6,8 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-typedef enum {
+typedef enum
+{
     TEMPERATURE_READING,
     DOOR_OPENED,
     DOOR_CLOSED,
@@ -15,13 +16,14 @@ typedef enum {
     INVALID
 } EventType;
 
-typedef struct {
+typedef struct
+{
     Timestamp timestamp;
     EventType type;
     int entity_id;
 } Event;
 
-Event event_create(Timestamp * timestamp, EventType type, int entity_id);
+Event event_create(Timestamp *timestamp, EventType type, int entity_id);
 
 void event_print(const Event *event);
 
