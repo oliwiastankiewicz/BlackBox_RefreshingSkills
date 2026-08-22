@@ -1,17 +1,34 @@
 #include <stdio.h>
 #include "event.h"
 #include "queue.h"
+#include "timestamp.h"
 
 int main(){
     printf("BlackBox - Version 1\n\n");
 
-    Event event_test_1 = event_create("000001", TEMPERATURE_READING, 0);
-    Event event_test_2 = event_create("000020", DOOR_OPENED, 1);
-    Event event_test_3 = event_create("000034", ALARM_TRIGGERED, 2);
-    Event event_test_4 = event_create("000155", DOOR_CLOSED, 3);
-    Event event_test_5 = event_create("000201", TEMPERATURE_READING, 4);
-    Event event_test_6 = event_create("000210", ALARM_CLEARED, 5);
-    Event event_test_7 = event_create("000301", TEMPERATURE_READING, 6);
+    Timestamp clock = timestamp_initialize();
+
+    timestamp_advance(&clock);
+
+    Event event_test_1 = event_create(&clock, TEMPERATURE_READING, 0);
+
+    timestamp_advance(&clock);
+    Event event_test_2 = event_create(&clock, DOOR_OPENED, 1);
+
+    timestamp_advance(&clock);
+    Event event_test_3 = event_create(&clock, ALARM_TRIGGERED, 2);
+
+    timestamp_advance(&clock);
+    Event event_test_4 = event_create(&clock, DOOR_CLOSED, 3);
+
+    timestamp_advance(&clock);
+    Event event_test_5 = event_create(&clock, TEMPERATURE_READING, 4);
+
+    timestamp_advance(&clock);
+    Event event_test_6 = event_create(&clock, ALARM_CLEARED, 5);
+
+    timestamp_advance(&clock);
+    Event event_test_7 = event_create(&clock, TEMPERATURE_READING, 6);
     
     event_print(&event_test_1);
     printf("\n");

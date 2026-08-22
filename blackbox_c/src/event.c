@@ -1,12 +1,10 @@
 #include <stdio.h>
-#include "event.h"
+#include "../include/event.h"
 
-Event event_create(char timestamp[7], EventType type, int entity_id){
+Event event_create(Timestamp * timestamp, EventType type, int entity_id){
     Event event;
 
-    for (int i=0 ; i<7 ; i++){
-        event.timestamp[i] = timestamp[i];
-    }
+    event.timestamp = *timestamp;
     
     event.type = type;
     event.entity_id = entity_id;
@@ -35,7 +33,7 @@ const char * event_type_to_string(EventType type){
 void event_print(const Event *event){
     
     const char * event_type = event_type_to_string(event -> type);
-    const char * time = event -> timestamp;
+    const Timestamp time = event -> timestamp;
 
-    printf("%c%c:%c%c:%c%c %s entity = %d\n", time[0], time[1], time[2], time[3], time[4], time[5], event_type, event -> entity_id);
+    printf("%02d:%02d:%02d %s entity = %d\n", time.hours, time.minutes, time.seconds, event_type, event -> entity_id);
 }
