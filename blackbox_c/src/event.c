@@ -24,6 +24,8 @@ Event event_create_invalid(void)
     event.entity.type = INVALID_ENTITY;
     event.entity.id_in_entity_registry_type = -1;
 
+    event.temperature = 0.0f;
+
     return event;
 }
 
@@ -62,5 +64,23 @@ void event_print(const Event *event)
     else
     {
         printf("%02d:%02d:%02d %s entity = %d\n", time.hours, time.minutes, time.seconds, event_type, event->entity.id);
+    }
+}
+
+void event_write_to_file(const Event *event, FILE *file)
+{
+
+    const char *event_type = event_type_to_string(event->type);
+    const Timestamp time = event->timestamp;
+
+    if (event->type == TEMPERATURE_READING)
+    {
+        int degree_ascii = 248;
+        char degree = degree_ascii;
+        fprintf(file, "%02d:%02d:%02d %s %.1f%c C entity = %d\n", time.hours, time.minutes, time.seconds, event_type, event->temperature, degree, event->entity.id);
+    }
+    else
+    {
+        fprintf(file, "%02d:%02d:%02d %s entity = %d\n", time.hours, time.minutes, time.seconds, event_type, event->entity.id);
     }
 }

@@ -2,32 +2,21 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include "entity.h"
 #include "event.h"
 #include "queue.h"
 #include "scenario.h"
 #include "timestamp.h"
+#include "simulation.h"
 
-static void print_separator(const char *title)
+static void separator(const char *title)
 {
-    printf("\n");
-    printf("============================================================\n");
-    printf("%s\n", title);
-    printf("============================================================\n");
+    printf("\n--- %s ---\n", title);
 }
 
 int main(void)
 {
-    /*
-     * Use a fixed seed while testing so that the scenario is
-     * reproducible.
-     *
-     * Once everything works, replace 23 with:
-     *
-     * srand((unsigned int)time(NULL));
-     */
     srand(23);
 
     printf("BlackBox - Version 1\n");
@@ -40,7 +29,7 @@ int main(void)
      * =========================================================
      */
 
-    print_separator("ENTITY CREATION");
+    separator("ENTITY CREATION");
 
     TemperatureSensor *sensor_1 = temperature_sensor_create();
     TemperatureSensor *sensor_2 = temperature_sensor_create();
@@ -56,231 +45,198 @@ int main(void)
         door_2 == NULL ||
         alarm_1 == NULL)
     {
-        printf("Entity creation failed.\n");
+        printf("FAIL: entity creation\n");
         return 1;
     }
 
-    printf("Temperature Sensor 1: id=%d\n",
-           sensor_1->entity.id);
-
-    printf("Temperature Sensor 2: id=%d\n",
+    printf("Sensors: %d, %d\n",
+           sensor_1->entity.id,
            sensor_2->entity.id);
 
-    printf("Door 1: id=%d\n",
-           door_1->entity.id);
-
-    printf("Door 2: id=%d\n",
+    printf("Doors: %d, %d\n",
+           door_1->entity.id,
            door_2->entity.id);
 
-    printf("Alarm 1: id=%d, attached to door=%d\n",
+    printf("Alarm: %d -> Door %d\n",
            alarm_1->entity.id,
            alarm_1->door_id);
 
     /*
      * =========================================================
-     * TEMPERATURE TEST
+     * TEMPERATURE
      * =========================================================
      */
 
-    print_separator("TEMPERATURE TEST");
-
-    Event event;
-
-    printf("Initial temperature:\n");
-    printf("Sensor 1: %.1f C\n",
-           sensor_1->current_temperature);
-
-    printf("\nUpdating all sensors to 25.5 C...\n");
+    separator("TEMPERATURE");
 
     temperature_update_all(25.5f);
-
-    printf("Sensor 1: %.1f C\n",
-           sensor_1->current_temperature);
-
-    printf("Sensor 2: %.1f C\n",
-           sensor_2->current_temperature);
-
-    printf("\nUpdating Sensor 1 to 20.0 C...\n");
-
     temperature_update(sensor_1, 20.0f);
 
-    printf("Current: %.1f C\n",
-           sensor_1->current_temperature);
-
-    printf("Minimum: %.1f C\n",
-           sensor_1->min_temperature);
-
-    printf("Maximum: %.1f C\n",
+    printf("Sensor 1: current=%.1f min=%.1f max=%.1f\n",
+           sensor_1->current_temperature,
+           sensor_1->min_temperature,
            sensor_1->max_temperature);
 
     timestamp_advance(&clock);
 
-    event = generate_temperature_reading(&clock, sensor_1);
-
-    printf("\nGenerated temperature event:\n");
+    Event event = generate_temperature_reading(&clock, sensor_1);
     event_print(&event);
 
     /*
      * =========================================================
-     * DOOR TEST
+     * DOOR + ALARM
      * =========================================================
      */
 
-    print_separator("DOOR TEST");
+    separator("DOOR + ALARM");
 
     timestamp_advance(&clock);
-
-    printf("Opening Door 1:\n");
 
     event = door_open(door_1, &clock);
     event_print(&event);
-
-    timestamp_advance(&clock);
-
-    printf("Trying to open Door 1 again:\n");
-
-    event = door_open(door_1, &clock);
-    event_print(&event);
-
-    timestamp_advance(&clock);
-
-    printf("Closing Door 1:\n");
-
-    event = door_close(door_1, &clock);
-    event_print(&event);
-
-    timestamp_advance(&clock);
-
-    printf("Trying to close Door 1 again:\n");
-
-    event = door_close(door_1, &clock);
-    event_print(&event);
-
-    /*
-     * =========================================================
-     * ALARM TEST
-     * =========================================================
-     */
-
-    print_separator("ALARM TEST");
-
-    timestamp_advance(&clock);
-
-    printf("Triggering Alarm 1:\n");
 
     event = alarm_trigger(alarm_1, &clock);
     event_print(&event);
 
     timestamp_advance(&clock);
 
-    printf("Trying to trigger Alarm 1 again:\n");
-
-    event = alarm_trigger(alarm_1, &clock);
+    event = door_close(door_1, &clock);
     event_print(&event);
-
-    timestamp_advance(&clock);
-
-    printf("Clearing Alarm 1:\n");
 
     event = alarm_clear(alarm_1, &clock);
     event_print(&event);
 
+    /*
+     * Test invalid repeated operations.
+     */
+
     timestamp_advance(&clock);
 
-    printf("Trying to clear Alarm 1 again:\n");
+    event = door_close(door_1, &clock);
+    event_print(&event);
 
     event = alarm_clear(alarm_1, &clock);
     event_print(&event);
 
     /*
      * =========================================================
-     * QUEUE TEST
+     * QUEUE
      * =========================================================
      */
 
-    print_separator("QUEUE TEST");
+    separator("QUEUE");
 
     Queue queue = queue_create();
 
-    printf("Queue initially empty: %s\n",
-           queue_is_empty(&queue) ? "yes" : "no");
-
-    printf("Queue initially full: %s\n",
-           queue_is_full(&queue) ? "yes" : "no");
+    timestamp_advance(&clock);
+    queue_push(&queue,
+               generate_temperature_reading(&clock, sensor_1));
 
     timestamp_advance(&clock);
+    queue_push(&queue,
+               door_open(door_2, &clock));
 
-    queue_push(
-        &queue,
-        generate_temperature_reading(&clock, sensor_1));
-
-    timestamp_advance(&clock);
-
-    queue_push(
-        &queue,
-        door_open(door_2, &clock));
-
-    timestamp_advance(&clock);
-
-    queue_push(
-        &queue,
-        alarm_trigger(alarm_1, &clock));
-
-    timestamp_advance(&clock);
-
-    queue_push(
-        &queue,
-        door_close(door_2, &clock));
-
-    timestamp_advance(&clock);
-
-    queue_push(
-        &queue,
-        alarm_clear(alarm_1, &clock));
-
-    printf("\nQueue size: %d\n",
+    printf("Size after push: %d\n",
            queue_get_size(&queue));
-
-    printf("\nQueue contents:\n");
-    queue_print(&queue);
-
-    /*
-     * =========================================================
-     * QUEUE PEEK
-     * =========================================================
-     */
-
-    printf("\nPeeking at queue:\n");
 
     Event peeked_event;
 
     if (queue_peek(&queue, &peeked_event))
     {
-        printf("Front event: ");
+        printf("Peek: ");
         event_print(&peeked_event);
     }
-
-    printf("Queue size after peek: %d\n",
-           queue_get_size(&queue));
-
-    /*
-     * =========================================================
-     * QUEUE POP
-     * =========================================================
-     */
-
-    printf("\nPopping queue:\n");
 
     Event popped_event;
 
     while (queue_pop(&queue, &popped_event))
     {
-        printf("Popped: ");
+        printf("Pop:  ");
         event_print(&popped_event);
     }
 
-    printf("Queue empty after popping: %s\n",
+    printf("Empty: %s\n",
            queue_is_empty(&queue) ? "yes" : "no");
+
+    /*
+     * =========================================================
+     * SCENARIO
+     * =========================================================
+     */
+
+    separator("SCENARIO");
+
+    Queue scenario_queue = queue_create();
+    Timestamp scenario_clock = timestamp_initialize();
+
+    int scenario_events = 0;
+
+    for (int second = 0; second < 60; second++)
+    {
+        scenario_generate(&scenario_queue, &scenario_clock);
+
+        while (queue_pop(&scenario_queue, &popped_event))
+        {
+            scenario_events++;
+            event_print(&popped_event);
+        }
+
+        timestamp_advance(&scenario_clock);
+    }
+
+    printf("Events generated: %d\n", scenario_events);
+
+    /*
+     * =========================================================
+     * SIMULATION
+     * =========================================================
+     */
+
+    separator("SIMULATION");
+
+    printf("Running 30-second simulation...\n");
+
+    Timestamp duration = timestamp_create(0, 0, 30);
+
+    simulation_run(
+        2,
+        1,
+        1,
+        duration);
+
+    printf("Output: SIMULATION_BlackBox.txt\n");
+
+    /*
+     * =========================================================
+     * INVALID INPUTS
+     * =========================================================
+     */
+
+    separator("INVALID INPUT");
+
+    printf("Too many sensors:\n");
+
+    simulation_run(
+        MAX_TEMPERATURE_SENSORS + 1,
+        0,
+        0,
+        timestamp_create(0, 0, 10));
+
+    printf("Too many doors:\n");
+
+    simulation_run(
+        0,
+        3,
+        3,
+        timestamp_create(0, 0, 10));
+
+    printf("Invalid duration:\n");
+
+    simulation_run(
+        1,
+        0,
+        0,
+        timestamp_create(2, 0, 0));
 
     /*
      * =========================================================
@@ -288,122 +244,50 @@ int main(void)
      * =========================================================
      */
 
-    print_separator("INVALID ENTITY CREATION");
+    separator("INVALID ENTITY");
 
-    TemperatureSensor *sensors[MAX_TEMPERATURE_SENSORS + 1];
-
-    for (int i = 0; i < MAX_TEMPERATURE_SENSORS + 1; i++)
-    {
-        sensors[i] = temperature_sensor_create();
-
-        if (sensors[i] == NULL)
-        {
-            printf("Temperature sensor creation rejected at index %d.\n", i);
-        }
-    }
+    TemperatureSensor *invalid_sensor = NULL;
 
     /*
-     * =========================================================
-     * INVALID ALARM CREATION
-     * =========================================================
+     * Fill the remaining sensor slots.
      */
+    while (entity_registry.temperature_sensor_count <
+           MAX_TEMPERATURE_SENSORS)
+    {
+        temperature_sensor_create();
+    }
 
-    print_separator("INVALID ALARM CREATION");
+    invalid_sensor = temperature_sensor_create();
+
+    printf("Extra sensor: %s\n",
+           invalid_sensor == NULL ? "rejected" : "ERROR");
 
     Alarm *invalid_alarm = alarm_create(999999);
 
-    if (invalid_alarm == NULL)
-    {
-        printf("Invalid alarm creation correctly rejected.\n");
-    }
-    else
-    {
-        printf("ERROR: Invalid alarm was created.\n");
-    }
+    printf("Invalid alarm: %s\n",
+           invalid_alarm == NULL ? "rejected" : "ERROR");
 
     /*
      * =========================================================
-     * SCENARIO TEST
+     * FINAL
      * =========================================================
      */
 
-    print_separator("SCENARIO SIMULATION");
+    separator("FINAL STATE");
 
-    /*
-     * Use a separate queue for the scenario.
-     */
-    Queue scenario_queue = queue_create();
+    printf("Sensors: %d/%d\n",
+           entity_registry.temperature_sensor_count,
+           MAX_TEMPERATURE_SENSORS);
 
-    /*
-     * Start a fresh simulated clock.
-     */
-    Timestamp scenario_clock = timestamp_initialize();
+    printf("Doors:   %d/%d\n",
+           entity_registry.door_count,
+           MAX_DOORS);
 
-    printf("Starting scenario simulation...\n");
-    printf("Simulation length: 120 seconds\n\n");
+    printf("Alarms:  %d/%d\n",
+           entity_registry.alarm_count,
+           MAX_ALARMS);
 
-    for (int second = 0; second < 120; second++)
-    {
-        scenario_generate(&scenario_queue, &scenario_clock);
-
-        /*
-         * Print and remove all events generated during
-         * this simulated second.
-         */
-        while (queue_pop(&scenario_queue, &popped_event))
-        {
-            event_print(&popped_event);
-        }
-
-        timestamp_advance(&scenario_clock);
-    }
-
-    /*
-     * =========================================================
-     * FINAL STATE
-     * =========================================================
-     */
-
-    print_separator("FINAL ENTITY STATE");
-
-    printf("Temperature Sensor 1:\n");
-    printf("  Current: %.2f C\n",
-           sensor_1->current_temperature);
-    printf("  Minimum: %.2f C\n",
-           sensor_1->min_temperature);
-    printf("  Maximum: %.2f C\n",
-           sensor_1->max_temperature);
-
-    printf("\nTemperature Sensor 2:\n");
-    printf("  Current: %.2f C\n",
-           sensor_2->current_temperature);
-    printf("  Minimum: %.2f C\n",
-           sensor_2->min_temperature);
-    printf("  Maximum: %.2f C\n",
-           sensor_2->max_temperature);
-
-    printf("\nDoor 1:\n");
-    printf("  State: %s\n",
-           door_1->state == OPEN ? "OPEN" : "CLOSED");
-
-    printf("\nDoor 2:\n");
-    printf("  State: %s\n",
-           door_2->state == OPEN ? "OPEN" : "CLOSED");
-
-    printf("\nAlarm 1:\n");
-    printf("  State: %s\n",
-           alarm_1->state == ACTIVE ? "ACTIVE" : "INACTIVE");
-
-    /*
-     * =========================================================
-     * COMPLETE
-     * =========================================================
-     */
-
-    printf("\n");
-    printf("============================================================\n");
-    printf("BlackBox tests complete.\n");
-    printf("============================================================\n");
+    printf("\nTests complete.\n");
 
     return 0;
 }

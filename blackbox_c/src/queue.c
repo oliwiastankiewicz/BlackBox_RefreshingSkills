@@ -44,7 +44,6 @@ bool queue_pop(Queue *queue, Event *event)
 {
     if (queue_is_empty(queue))
     {
-        printf("Queue is empty!\n");
         return false;
     }
 
@@ -60,7 +59,6 @@ bool queue_peek(const Queue *queue, Event *event)
 {
     if (queue_is_empty(queue))
     {
-        printf("Queue is empty!\n");
         return false;
     }
 

@@ -1,5 +1,7 @@
 #include "../include/timestamp.h"
 
+#define MAX_HOURS 1
+
 Timestamp timestamp_initialize()
 {
     Timestamp current_time;
@@ -7,6 +9,36 @@ Timestamp timestamp_initialize()
     current_time.seconds = 0;
     current_time.minutes = 0;
     current_time.hours = 0;
+
+    return current_time;
+}
+
+bool timestamp_validate(int hours, int minutes, int seconds)
+{
+    if (hours >= 0 &&
+        hours <= MAX_HOURS &&
+        minutes >= 0 &&
+        minutes <= 59 &&
+        seconds >= 0 &&
+        seconds <= 59)
+    {
+        return true;
+    }
+    return false;
+}
+
+Timestamp timestamp_create(int hours, int minutes, int seconds)
+{
+    if (!timestamp_validate(hours, minutes, seconds))
+    {
+        return timestamp_initialize();
+    }
+
+    Timestamp current_time;
+
+    current_time.seconds = seconds;
+    current_time.minutes = minutes;
+    current_time.hours = hours;
 
     return current_time;
 }

@@ -5,6 +5,7 @@
 
 #include "timestamp.h"
 #include "entity_base.h"
+#include <stdio.h>
 
 typedef enum
 {
@@ -29,5 +30,6 @@ Event event_create(Timestamp timestamp, EventType type, Entity entity);
 Event event_create_invalid();
 
 void event_print(const Event *event);
+void event_write_to_file(const Event *event, FILE *file);
 
 #endif

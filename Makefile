@@ -9,7 +9,8 @@ OBJECTS = blackbox_c/build/main.o \
           blackbox_c/build/queue.o \
           blackbox_c/build/timestamp.o \
           blackbox_c/build/entity.o \
-		  blackbox_c/build/scenario.o
+		  blackbox_c/build/scenario.o \
+          blackbox_c/build/simulation.o
 
 .PHONY: all run clean
 
@@ -23,7 +24,8 @@ blackbox_c/build/main.o: blackbox_c/src/main.c \
                          blackbox_c/include/event.h \
                          blackbox_c/include/queue.h \
                          blackbox_c/include/timestamp.h \
-						 blackbox_c/include/scenario.h
+						 blackbox_c/include/scenario.h \
+                         blackbox_c/include/simulation.h
 	$(CC) $(CFLAGS) -c blackbox_c/src/main.c -o blackbox_c/build/main.o
 
 blackbox_c/build/event.o: blackbox_c/src/event.c \
@@ -50,8 +52,21 @@ blackbox_c/build/entity.o: blackbox_c/src/entity.c \
 	$(CC) $(CFLAGS) -c blackbox_c/src/entity.c -o blackbox_c/build/entity.o
 
 blackbox_c/build/scenario.o: blackbox_c/src/scenario.c \
-							 blackbox_c/include/scenario.h
+							 blackbox_c/include/scenario.h \
+                             blackbox_c/include/entity.h \
+                             blackbox_c/include/queue.h \
+                             blackbox_c/include/timestamp.h
 	$(CC) $(CFLAGS) -c blackbox_c/src/scenario.c -o blackbox_c/build/scenario.o
+
+blackbox_c/build/simulation.o: blackbox_c/src/simulation.c \
+							 blackbox_c/include/scenario.h \
+                             blackbox_c/include/simulation.h \
+                             blackbox_c/include/timestamp.h \
+                             blackbox_c/include/queue.h \
+                             blackbox_c/include/entity.h \
+                             blackbox_c/include/event.h \
+                             blackbox_c/include/entity_base.h
+	$(CC) $(CFLAGS) -c blackbox_c/src/simulation.c -o blackbox_c/build/simulation.o
 
 run: $(TARGET)
 	./$(TARGET)
