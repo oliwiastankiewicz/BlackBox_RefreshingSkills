@@ -56,7 +56,11 @@ void scenario_generate(Queue *queue, Timestamp *timestamp)
         for (int i = 0; i < entity_registry.temperature_sensor_count; i++)
         {
             Event event = generate_temperature_reading(timestamp, &entity_registry.temperature_sensors[i]);
-            queue_push(queue, event);
+
+            if (event.type != INVALID)
+            {
+                queue_push(queue, event);
+            }
         }
     }
 
@@ -67,14 +71,22 @@ void scenario_generate(Queue *queue, Timestamp *timestamp)
             if (probability_check(DOOR_OPEN_PROBABILITY))
             {
                 Event event = door_open(&entity_registry.doors[i], timestamp);
-                queue_push(queue, event);
 
-                Alarm *alarm = alarm_attached(entity_registry.doors[i].entity.id);
-
-                if (alarm != NULL)
+                if (event.type != INVALID)
                 {
-                    Event trigger = alarm_trigger(alarm, timestamp);
-                    queue_push(queue, trigger);
+                    queue_push(queue, event);
+
+                    Alarm *alarm = alarm_attached(entity_registry.doors[i].entity.id);
+
+                    if (alarm != NULL)
+                    {
+                        Event trigger = alarm_trigger(alarm, timestamp);
+
+                        if (trigger.type != INVALID)
+                        {
+                            queue_push(queue, trigger);
+                        }
+                    }
                 }
             }
         }
@@ -83,14 +95,22 @@ void scenario_generate(Queue *queue, Timestamp *timestamp)
             if (probability_check(DOOR_CLOSE_PROBABILITY))
             {
                 Event event = door_close(&entity_registry.doors[i], timestamp);
-                queue_push(queue, event);
 
-                Alarm *alarm = alarm_attached(entity_registry.doors[i].entity.id);
-
-                if (alarm != NULL)
+                if (event.type != INVALID)
                 {
-                    Event trigger = alarm_clear(alarm, timestamp);
-                    queue_push(queue, trigger);
+                    queue_push(queue, event);
+
+                    Alarm *alarm = alarm_attached(entity_registry.doors[i].entity.id);
+
+                    if (alarm != NULL)
+                    {
+                        Event trigger = alarm_clear(alarm, timestamp);
+
+                        if (trigger.type != INVALID)
+                        {
+                            queue_push(queue, trigger);
+                        }
+                    }
                 }
             }
         }
