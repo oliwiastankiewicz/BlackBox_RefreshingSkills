@@ -96,6 +96,7 @@ blackbox_c/\
 │ ├── event.h\
 │ ├── queue.h\
 │ ├── timestamp.h\
+│ ├── entity_base.h\
 │ ├── entity.h\
 │ ├── simulation.h\
 │ ├── scenario.h\
