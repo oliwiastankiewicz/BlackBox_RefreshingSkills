@@ -8,6 +8,7 @@ Event event_create(Timestamp timestamp, EventType type, Entity entity)
     event.timestamp = timestamp;
     event.type = type;
     event.entity = entity;
+    event.temperature = 0.0f;
 
     return event;
 }
