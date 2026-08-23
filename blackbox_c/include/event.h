@@ -1,10 +1,10 @@
 // Initial: TEMPERATURE_READING, DOOR_OPENED, DOOR_CLOSED, ALARM_TRIGGERED, ALARM_CLEARED
 // To add later: MACHINE_STARTED, MACHINE_STOPPED, JOB_CREATED, JOB_COMPLETED, DEVICE_FAILURE
-
-#include "timestamp.h"
-
 #ifndef EVENT_H
 #define EVENT_H
+
+#include "timestamp.h"
+#include "entity_base.h"
 
 typedef enum
 {
@@ -20,10 +20,13 @@ typedef struct
 {
     Timestamp timestamp;
     EventType type;
-    int entity_id;
+    Entity entity;
+
+    float temperature;
 } Event;
 
-Event event_create(Timestamp *timestamp, EventType type, int entity_id);
+Event event_create(Timestamp timestamp, EventType type, Entity entity);
+Event event_create_invalid();
 
 void event_print(const Event *event);
 
