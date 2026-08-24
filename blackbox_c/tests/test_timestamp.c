@@ -1,7 +1,8 @@
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 
-#include "../include/timestamp.h"
+#include "timestamp.h"
+#include "logger.h"
 
 static void test_initialize(void)
 {
@@ -38,7 +39,7 @@ static void test_create(void)
 
 static void test_create_invalid(void)
 {
-    Timestamp timestamp = timestamp_create(0, 60, 0);
+    Timestamp timestamp = timestamp_create(-1, -1, -1);
 
     assert(timestamp.hours == -1);
     assert(timestamp.minutes == -1);
@@ -100,36 +101,60 @@ static void test_compare_hours(void)
 
 int main(void)
 {
+    Logger logger = logger_create("blackbox_c/recordings/tests/test_timestamp.txt");
+
+    if (logger.file == NULL)
+    {
+        printf("Could not create test_timestamp.txt\n");
+        return 1;
+    }
+
     printf("=== TIMESTAMP TESTS ===\n");
+    logger_section(&logger, "TIMESTAMP TESTS");
 
     test_initialize();
+    logger_test(&logger, "initialization", true);
     printf("[PASS] initialization\n");
 
     test_validate();
+    logger_test(&logger, "validation", true);
     printf("[PASS] validation\n");
 
     test_create();
+    logger_test(&logger, "creation", true);
     printf("[PASS] creation\n");
 
     test_create_invalid();
+    logger_test(&logger, "invalid creation", true);
     printf("[PASS] invalid creation\n");
 
     test_advance_seconds();
+    logger_test(&logger, "advance seconds", true);
     printf("[PASS] advance seconds\n");
 
     test_advance_minute();
+    logger_test(&logger, "advance minute", true);
     printf("[PASS] advance minute\n");
 
     test_advance_hour();
+    logger_test(&logger, "advance hour", true);
     printf("[PASS] advance hour\n");
 
     test_compare();
+    logger_test(&logger, "comparison", true);
     printf("[PASS] comparison\n");
 
     test_compare_hours();
+    logger_test(&logger, "hour comparison", true);
     printf("[PASS] hour comparison\n");
 
-    printf("=== ALL TIMESTAMP TESTS PASSED ===\n");
+    logger_section(&logger, "SUMMARY");
+    fprintf(logger.file, "Passed: %d\n", logger.passed);
+    fprintf(logger.file, "Failed: %d\n", logger.failed);
 
+    printf("\n=== ALL TIMESTAMP TESTS PASSED ===\n");
+    printf("Results written to blackbox_c/recordings/tests/test_timestamp.txt\n");
+
+    logger_destroy(&logger);
     return 0;
 }

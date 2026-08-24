@@ -6,6 +6,7 @@
 #include "entity.h"
 #include "queue.h"
 #include "timestamp.h"
+#include "logger.h"
 
 static void test_temperature_readings(void)
 {
@@ -261,27 +262,79 @@ static void test_temperature_reading_interval(void)
 
 int main(void)
 {
-    printf("Running scenario tests...\n");
+    Logger logger =
+        logger_create(
+            "blackbox_c/recordings/tests/test_scenario.txt");
+
+    if (logger.file == NULL)
+    {
+        printf("Could not create test_scenario.txt\n");
+        return 1;
+    }
+
+    printf("=== SCENARIO TESTS ===\n");
+
+    logger_section(&logger, "SCENARIO TESTS");
 
     test_temperature_readings();
-    printf("  [PASS] temperature readings\n");
+    logger_test(
+        &logger,
+        "temperature readings",
+        true);
+    printf("[PASS] temperature readings\n");
 
     test_door_alarm_relationship();
-    printf("  [PASS] door/alarm relationship\n");
+    logger_test(
+        &logger,
+        "door/alarm relationship",
+        true);
+    printf("[PASS] door/alarm relationship\n");
 
     test_door_without_alarm();
-    printf("  [PASS] door without alarm\n");
+    logger_test(
+        &logger,
+        "door without alarm",
+        true);
+    printf("[PASS] door without alarm\n");
 
     test_temperature_changes();
-    printf("  [PASS] temperature changes\n");
+    logger_test(
+        &logger,
+        "temperature changes",
+        true);
+    printf("[PASS] temperature changes\n");
 
     test_queue_is_empty_after_processing();
-    printf("  [PASS] queue processing\n");
+    logger_test(
+        &logger,
+        "queue processing",
+        true);
+    printf("[PASS] queue processing\n");
 
     test_temperature_reading_interval();
-    printf("  [PASS] temperature reading interval\n");
+    logger_test(
+        &logger,
+        "temperature reading interval",
+        true);
+    printf("[PASS] temperature reading interval\n");
 
-    printf("All scenario tests passed.\n");
+    logger_section(&logger, "SUMMARY");
+
+    fprintf(
+        logger.file,
+        "Passed: %d\n",
+        logger.passed);
+
+    fprintf(
+        logger.file,
+        "Failed: %d\n",
+        logger.failed);
+
+    printf("\n=== ALL SCENARIO TESTS PASSED ===\n");
+    printf(
+        "Results written to blackbox_c/recordings/tests/test_scenario.txt\n");
+
+    logger_destroy(&logger);
 
     return 0;
 }

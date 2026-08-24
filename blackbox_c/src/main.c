@@ -16,7 +16,7 @@ int main(void)
 
     printf("Running simulation...\n\n");
 
-    simulation_run("SIMULATION_1.txt", 2, 1, 1, duration);
+    simulation_run("blackbox_c/recordings/SIMULATION_1.txt", 2, 1, 1, duration);
 
     printf("\nSimulation finished.\n");
 

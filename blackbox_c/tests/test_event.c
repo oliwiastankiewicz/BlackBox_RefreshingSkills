@@ -1,9 +1,10 @@
 #include <stdio.h>
-#include <assert.h>
+#include <stdbool.h>
 
 #include "../include/event.h"
+#include "../include/logger.h"
 
-static void test_event_create(void)
+static bool test_event_create(void)
 {
     Timestamp timestamp = timestamp_create(0, 1, 2);
 
@@ -14,33 +15,31 @@ static void test_event_create(void)
 
     Event event = event_create(timestamp, DOOR_OPENED, entity);
 
-    assert(event.timestamp.hours == 0);
-    assert(event.timestamp.minutes == 1);
-    assert(event.timestamp.seconds == 2);
-
-    assert(event.type == DOOR_OPENED);
-    assert(event.entity.id == 5);
-    assert(event.entity.type == DOOR);
-    assert(event.entity.id_in_entity_registry_type == 0);
-    assert(event.temperature == 0.0f);
+    return event.timestamp.hours == 0 &&
+           event.timestamp.minutes == 1 &&
+           event.timestamp.seconds == 2 &&
+           event.type == DOOR_OPENED &&
+           event.entity.id == 5 &&
+           event.entity.type == DOOR &&
+           event.entity.id_in_entity_registry_type == 0 &&
+           event.temperature == 0.0f;
 }
 
-static void test_invalid_event(void)
+static bool test_invalid_event(void)
 {
     Event event = event_create_invalid();
 
-    assert(event.type == INVALID);
-    assert(event.entity.id == -1);
-    assert(event.entity.type == INVALID_ENTITY);
-    assert(event.entity.id_in_entity_registry_type == -1);
-    assert(event.temperature == 0.0f);
-
-    assert(event.timestamp.hours == 0);
-    assert(event.timestamp.minutes == 0);
-    assert(event.timestamp.seconds == 0);
+    return event.type == INVALID &&
+           event.entity.id == -1 &&
+           event.entity.type == INVALID_ENTITY &&
+           event.entity.id_in_entity_registry_type == -1 &&
+           event.temperature == 0.0f &&
+           event.timestamp.hours == 0 &&
+           event.timestamp.minutes == 0 &&
+           event.timestamp.seconds == 0;
 }
 
-static void test_temperature_event(void)
+static bool test_temperature_event(void)
 {
     Timestamp timestamp = timestamp_create(0, 0, 10);
 
@@ -53,12 +52,13 @@ static void test_temperature_event(void)
 
     event.temperature = 25.5f;
 
-    assert(event.type == TEMPERATURE_READING);
-    assert(event.entity.id == 0);
-    assert(event.temperature == 25.5f);
+    return event.type == TEMPERATURE_READING &&
+           event.entity.id == 0 &&
+           event.entity.type == TEMPERATURE_SENSOR &&
+           event.temperature == 25.5f;
 }
 
-static void test_event_write(void)
+static bool test_event_write(Logger *logger)
 {
     Timestamp timestamp = timestamp_create(0, 0, 5);
 
@@ -69,30 +69,74 @@ static void test_event_write(void)
 
     Event event = event_create(timestamp, DOOR_OPENED, entity);
 
-    FILE *file = fopen("test_event_output.txt", "w");
+    if (logger->file == NULL)
+    {
+        return false;
+    }
 
-    assert(file != NULL);
+    event_write_to_file(&event, logger->file);
 
-    event_write_to_file(&event, file);
+    /*
+     * Make sure the output is physically written to the file
+     * before the test continues.
+     */
+    fflush(logger->file);
 
-    fclose(file);
+    return true;
 }
 
 int main(void)
 {
+    Logger logger =
+        logger_create("blackbox_c/recordings/tests/test_event.txt");
+
+    if (logger.file == NULL)
+    {
+        printf("Could not create test_event.txt\n");
+        return 1;
+    }
+
     printf("=== EVENT TESTS ===\n");
 
-    test_event_create();
-    printf("[PASS] event_create\n");
+    logger_section(&logger, "EVENT TESTS");
 
-    test_invalid_event();
-    printf("[PASS] event_create_invalid\n");
+    bool passed;
 
-    test_temperature_event();
-    printf("[PASS] temperature event\n");
+    passed = test_event_create();
+    logger_test(&logger, "event_create", passed);
 
-    test_event_write();
-    printf("[PASS] event_write_to_file\n");
+    passed = test_invalid_event();
+    logger_test(&logger, "event_create_invalid", passed);
+
+    passed = test_temperature_event();
+    logger_test(&logger, "temperature event", passed);
+
+    logger_section(&logger, "EVENT FILE OUTPUT");
+
+    passed = test_event_write(&logger);
+    logger_test(&logger, "event_write_to_file", passed);
+
+    logger_section(&logger, "SUMMARY");
+
+    fprintf(
+        logger.file,
+        "Passed: %d\n",
+        logger.passed);
+
+    fprintf(
+        logger.file,
+        "Failed: %d\n",
+        logger.failed);
+
+    int failed = logger.failed;
+
+    logger_destroy(&logger);
+
+    if (failed > 0)
+    {
+        printf("=== EVENT TESTS FAILED ===\n");
+        return 1;
+    }
 
     printf("=== ALL EVENT TESTS PASSED ===\n");
 

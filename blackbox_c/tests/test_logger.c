@@ -4,7 +4,8 @@
 
 #include "logger.h"
 
-#define TEST_LOG_FILE "test_logger_output.txt"
+#define TEST_LOG_FILE "blackbox_c/recordings/tests/test_logger_output.txt"
+#define TEST_REPORT_FILE "blackbox_c/recordings/tests/test_logger.txt"
 
 static void test_logger_create(void)
 {
@@ -167,30 +168,85 @@ static void test_logger_invalid_file(void)
 
 int main(void)
 {
-    printf("Running logger tests...\n");
+    Logger logger = logger_create(TEST_REPORT_FILE);
+
+    if (logger.file == NULL)
+    {
+        printf("Could not create %s\n", TEST_REPORT_FILE);
+        return 1;
+    }
+
+    printf("=== LOGGER TESTS ===\n");
+
+    logger_section(&logger, "LOGGER TESTS");
 
     test_logger_create();
-    printf("  [PASS] logger create\n");
+    logger_test(
+        &logger,
+        "logger create",
+        true);
+    printf("[PASS] logger create\n");
 
     test_logger_test_pass();
-    printf("  [PASS] logger pass\n");
+    logger_test(
+        &logger,
+        "logger pass",
+        true);
+    printf("[PASS] logger pass\n");
 
     test_logger_test_fail();
-    printf("  [PASS] logger fail\n");
+    logger_test(
+        &logger,
+        "logger fail",
+        true);
+    printf("[PASS] logger fail\n");
 
     test_logger_multiple_tests();
-    printf("  [PASS] multiple tests\n");
+    logger_test(
+        &logger,
+        "multiple tests",
+        true);
+    printf("[PASS] multiple tests\n");
 
     test_logger_section();
-    printf("  [PASS] logger section\n");
+    logger_test(
+        &logger,
+        "logger section",
+        true);
+    printf("[PASS] logger section\n");
 
     test_logger_destroy();
-    printf("  [PASS] logger destroy\n");
+    logger_test(
+        &logger,
+        "logger destroy",
+        true);
+    printf("[PASS] logger destroy\n");
 
     test_logger_invalid_file();
-    printf("  [PASS] invalid file handling\n");
+    logger_test(
+        &logger,
+        "invalid file handling",
+        true);
+    printf("[PASS] invalid file handling\n");
 
-    printf("All logger tests passed.\n");
+    logger_section(&logger, "SUMMARY");
+
+    fprintf(
+        logger.file,
+        "Passed: %d\n",
+        logger.passed);
+
+    fprintf(
+        logger.file,
+        "Failed: %d\n",
+        logger.failed);
+
+    printf("\n=== ALL LOGGER TESTS PASSED ===\n");
+    printf(
+        "Results written to %s\n",
+        TEST_REPORT_FILE);
+
+    logger_destroy(&logger);
 
     return 0;
 }

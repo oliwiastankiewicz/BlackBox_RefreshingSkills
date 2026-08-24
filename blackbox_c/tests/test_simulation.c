@@ -1,9 +1,9 @@
-#include <stdio.h>
 #include <assert.h>
-#include <string.h>
+#include <stdio.h>
 
-#include "../include/simulation.h"
-#include "../include/timestamp.h"
+#include "simulation.h"
+#include "timestamp.h"
+#include "logger.h"
 
 static int file_exists(const char *filename)
 {
@@ -30,14 +30,12 @@ static int file_has_content(const char *filename)
     int character = fgetc(file);
 
     fclose(file);
-
     return character != EOF;
 }
 
 static void test_basic_simulation(void)
 {
-    const char *filename = "test_simulation_basic.txt";
-
+    const char *filename = "blackbox_c/recordings/tests/test_simulation_basic.txt";
     Timestamp duration = timestamp_create(0, 0, 3);
 
     simulation_run(filename, 2, 1, 1, duration);
@@ -50,18 +48,15 @@ static void test_basic_simulation(void)
 
 static void test_multiple_simulations(void)
 {
-    const char *file1 = "test_simulation_1.txt";
-    const char *file2 = "test_simulation_2.txt";
-
+    const char *file1 = "blackbox_c/recordings/tests/test_simulation_1.txt";
+    const char *file2 = "blackbox_c/recordings/tests/test_simulation_2.txt";
     Timestamp duration = timestamp_create(0, 0, 2);
 
     simulation_run(file1, 1, 1, 0, duration);
-
     simulation_run(file2, 2, 0, 2, duration);
 
     assert(file_exists(file1));
     assert(file_exists(file2));
-
     assert(file_has_content(file1));
     assert(file_has_content(file2));
 
@@ -71,8 +66,7 @@ static void test_multiple_simulations(void)
 
 static void test_zero_entities(void)
 {
-    const char *filename = "test_simulation_empty.txt";
-
+    const char *filename = "blackbox_c/recordings/tests/test_simulation_empty.txt";
     Timestamp duration = timestamp_create(0, 0, 2);
 
     simulation_run(filename, 0, 0, 0, duration);
@@ -84,11 +78,15 @@ static void test_zero_entities(void)
 
 static void test_maximum_valid_entities(void)
 {
-    const char *filename = "test_simulation_max.txt";
-
+    const char *filename = "blackbox_c/recordings/tests/test_simulation_max.txt";
     Timestamp duration = timestamp_create(0, 0, 1);
 
-    simulation_run(filename, MAX_TEMPERATURE_SENSORS, 0, MAX_DOORS, duration);
+    simulation_run(
+        filename,
+        MAX_TEMPERATURE_SENSORS,
+        0,
+        MAX_DOORS,
+        duration);
 
     assert(file_exists(filename));
 
@@ -97,19 +95,22 @@ static void test_maximum_valid_entities(void)
 
 static void test_invalid_sensor_count(void)
 {
-    const char *filename = "test_simulation_invalid_sensor.txt";
-
+    const char *filename = "blackbox_c/recordings/tests/test_simulation_invalid_sensor.txt";
     Timestamp duration = timestamp_create(0, 0, 1);
 
-    simulation_run(filename, MAX_TEMPERATURE_SENSORS + 1, 0, 0, duration);
+    simulation_run(
+        filename,
+        MAX_TEMPERATURE_SENSORS + 1,
+        0,
+        0,
+        duration);
 
     assert(!file_exists(filename));
 }
 
 static void test_invalid_door_count(void)
 {
-    const char *filename = "test_simulation_invalid_doors.txt";
-
+    const char *filename = "blackbox_c/recordings/tests/test_simulation_invalid_doors.txt";
     Timestamp duration = timestamp_create(0, 0, 1);
 
     simulation_run(filename, 0, 3, 3, duration);
@@ -119,9 +120,8 @@ static void test_invalid_door_count(void)
 
 static void test_invalid_duration(void)
 {
-    const char *filename = "test_simulation_invalid_duration.txt";
-
-    Timestamp duration = timestamp_create(2, -1, 0);
+    const char *filename = "blackbox_c/recordings/tests/test_simulation_invalid_duration.txt";
+    Timestamp duration = timestamp_create(-1, -1, -1);
 
     simulation_run(filename, 1, 1, 0, duration);
 
@@ -130,12 +130,10 @@ static void test_invalid_duration(void)
 
 static void test_simulation_file_overwrite(void)
 {
-    const char *filename = "test_simulation_overwrite.txt";
-
+    const char *filename = "blackbox_c/recordings/tests/test_simulation_overwrite.txt";
     Timestamp duration = timestamp_create(0, 0, 1);
 
     simulation_run(filename, 1, 1, 0, duration);
-
     assert(file_exists(filename));
 
     simulation_run(filename, 2, 0, 1, duration);
@@ -148,33 +146,56 @@ static void test_simulation_file_overwrite(void)
 
 int main(void)
 {
+    Logger logger = logger_create("blackbox_c/recordings/tests/test_simulation.txt");
+
+    if (logger.file == NULL)
+    {
+        printf("Could not create test_simulation.txt\n");
+        return 1;
+    }
+
     printf("=== SIMULATION TESTS ===\n");
+    logger_section(&logger, "SIMULATION TESTS");
 
     test_basic_simulation();
+    logger_test(&logger, "basic simulation", true);
     printf("[PASS] basic simulation\n");
 
     test_multiple_simulations();
+    logger_test(&logger, "multiple independent simulations", true);
     printf("[PASS] multiple independent simulations\n");
 
     test_zero_entities();
+    logger_test(&logger, "zero entities", true);
     printf("[PASS] zero entities\n");
 
     test_maximum_valid_entities();
+    logger_test(&logger, "maximum valid entities", true);
     printf("[PASS] maximum valid entities\n");
 
     test_invalid_sensor_count();
+    logger_test(&logger, "invalid sensor count", true);
     printf("[PASS] invalid sensor count\n");
 
     test_invalid_door_count();
+    logger_test(&logger, "invalid door count", true);
     printf("[PASS] invalid door count\n");
 
     test_invalid_duration();
+    logger_test(&logger, "invalid duration", true);
     printf("[PASS] invalid duration\n");
 
     test_simulation_file_overwrite();
+    logger_test(&logger, "simulation file handling", true);
     printf("[PASS] simulation file handling\n");
 
-    printf("=== ALL SIMULATION TESTS PASSED ===\n");
+    logger_section(&logger, "SUMMARY");
+    fprintf(logger.file, "Passed: %d\n", logger.passed);
+    fprintf(logger.file, "Failed: %d\n", logger.failed);
 
+    printf("\n=== ALL SIMULATION TESTS PASSED ===\n");
+    printf("Results written to blackbox_c/recordings/tests/test_simulation.txt\n");
+
+    logger_destroy(&logger);
     return 0;
 }

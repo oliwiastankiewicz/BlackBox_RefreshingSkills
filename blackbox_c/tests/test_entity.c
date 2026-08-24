@@ -3,6 +3,7 @@
 
 #include "../include/entity.h"
 #include "../include/timestamp.h"
+#include "../include/logger.h"
 
 static void test_registry_initialize(void)
 {
@@ -35,9 +36,11 @@ static void test_registry_independence(void)
     EntityRegistry registry_1 = entity_registry_initialize();
     EntityRegistry registry_2 = entity_registry_initialize();
 
-    TemperatureSensor *sensor_1 = temperature_sensor_create(&registry_1);
+    TemperatureSensor *sensor_1 =
+        temperature_sensor_create(&registry_1);
 
-    TemperatureSensor *sensor_2 = temperature_sensor_create(&registry_2);
+    TemperatureSensor *sensor_2 =
+        temperature_sensor_create(&registry_2);
 
     assert(sensor_1->entity.id == 0);
     assert(sensor_2->entity.id == 0);
@@ -50,7 +53,8 @@ static void test_temperature_sensor_create(void)
 {
     EntityRegistry registry = entity_registry_initialize();
 
-    TemperatureSensor *sensor = temperature_sensor_create(&registry);
+    TemperatureSensor *sensor =
+        temperature_sensor_create(&registry);
 
     assert(sensor != NULL);
     assert(sensor->entity.id == 0);
@@ -69,9 +73,11 @@ static void test_temperature_sensor_ids(void)
 {
     EntityRegistry registry = entity_registry_initialize();
 
-    TemperatureSensor *sensor_1 = temperature_sensor_create(&registry);
+    TemperatureSensor *sensor_1 =
+        temperature_sensor_create(&registry);
 
-    TemperatureSensor *sensor_2 = temperature_sensor_create(&registry);
+    TemperatureSensor *sensor_2 =
+        temperature_sensor_create(&registry);
 
     assert(sensor_1->entity.id == 0);
     assert(sensor_2->entity.id == 1);
@@ -89,20 +95,24 @@ static void test_temperature_sensor_capacity(void)
         assert(temperature_sensor_create(&registry) != NULL);
     }
 
-    assert(registry.temperature_sensor_count == MAX_TEMPERATURE_SENSORS);
+    assert(registry.temperature_sensor_count ==
+           MAX_TEMPERATURE_SENSORS);
 
-    TemperatureSensor *extra = temperature_sensor_create(&registry);
+    TemperatureSensor *extra =
+        temperature_sensor_create(&registry);
 
     assert(extra == NULL);
 
-    assert(registry.temperature_sensor_count == MAX_TEMPERATURE_SENSORS);
+    assert(registry.temperature_sensor_count ==
+           MAX_TEMPERATURE_SENSORS);
 }
 
 static void test_temperature_update(void)
 {
     EntityRegistry registry = entity_registry_initialize();
 
-    TemperatureSensor *sensor = temperature_sensor_create(&registry);
+    TemperatureSensor *sensor =
+        temperature_sensor_create(&registry);
 
     temperature_update(sensor, 30.0f);
 
@@ -127,9 +137,11 @@ static void test_temperature_update_all(void)
 {
     EntityRegistry registry = entity_registry_initialize();
 
-    TemperatureSensor *sensor_1 = temperature_sensor_create(&registry);
+    TemperatureSensor *sensor_1 =
+        temperature_sensor_create(&registry);
 
-    TemperatureSensor *sensor_2 = temperature_sensor_create(&registry);
+    TemperatureSensor *sensor_2 =
+        temperature_sensor_create(&registry);
 
     temperature_update_all(&registry, 28.0f);
 
@@ -161,11 +173,14 @@ static void test_door_ids(void)
 {
     EntityRegistry registry = entity_registry_initialize();
 
-    TemperatureSensor *sensor = temperature_sensor_create(&registry);
+    TemperatureSensor *sensor =
+        temperature_sensor_create(&registry);
 
-    Door *door_1 = door_create(&registry);
+    Door *door_1 =
+        door_create(&registry);
 
-    Door *door_2 = door_create(&registry);
+    Door *door_2 =
+        door_create(&registry);
 
     assert(sensor->entity.id == 0);
     assert(door_1->entity.id == 1);
@@ -242,7 +257,8 @@ static void test_alarm_create(void)
 
     Door *door = door_create(&registry);
 
-    Alarm *alarm = alarm_create(&registry, door->entity.id);
+    Alarm *alarm =
+        alarm_create(&registry, door->entity.id);
 
     assert(alarm != NULL);
     assert(alarm->entity.id == 1);
@@ -260,7 +276,8 @@ static void test_alarm_invalid_door(void)
 {
     EntityRegistry registry = entity_registry_initialize();
 
-    Alarm *alarm = alarm_create(&registry, 9999);
+    Alarm *alarm =
+        alarm_create(&registry, 9999);
 
     assert(alarm == NULL);
     assert(registry.alarm_count == 0);
@@ -280,7 +297,8 @@ static void test_alarm_capacity(void)
 
     assert(registry.alarm_count == MAX_ALARMS);
 
-    Alarm *extra = alarm_create(&registry, door->entity.id);
+    Alarm *extra =
+        alarm_create(&registry, door->entity.id);
 
     assert(extra == NULL);
     assert(registry.alarm_count == MAX_ALARMS);
@@ -292,7 +310,8 @@ static void test_alarm_trigger_clear(void)
 
     Door *door = door_create(&registry);
 
-    Alarm *alarm = alarm_create(&registry, door->entity.id);
+    Alarm *alarm =
+        alarm_create(&registry, door->entity.id);
 
     Timestamp timestamp = timestamp_initialize();
 
@@ -317,7 +336,8 @@ static void test_invalid_alarm_transitions(void)
 
     Door *door = door_create(&registry);
 
-    Alarm *alarm = alarm_create(&registry, door->entity.id);
+    Alarm *alarm =
+        alarm_create(&registry, door->entity.id);
 
     Timestamp timestamp = timestamp_initialize();
 
@@ -340,73 +360,180 @@ static void test_door_exists(void)
 
     Door *door = door_create(&registry);
 
-    assert(entity_registry_check_door_exists(&registry, door->entity.id));
+    assert(entity_registry_check_door_exists(
+        &registry,
+        door->entity.id));
 
-    assert(!entity_registry_check_door_exists(&registry, 9999));
+    assert(!entity_registry_check_door_exists(
+        &registry,
+        9999));
 }
 
 int main(void)
 {
+    Logger logger =
+        logger_create(
+            "blackbox_c/recordings/tests/test_entity.txt");
+
+    if (logger.file == NULL)
+    {
+        printf("Could not create test_entity.txt\n");
+        return 1;
+    }
+
     printf("=== ENTITY TESTS ===\n");
 
+    logger_section(&logger, "ENTITY TESTS");
+
     test_registry_initialize();
+    logger_test(
+        &logger,
+        "registry initialization",
+        true);
     printf("[PASS] registry initialization\n");
 
     test_registry_reset();
+    logger_test(
+        &logger,
+        "registry reset",
+        true);
     printf("[PASS] registry reset\n");
 
     test_registry_independence();
+    logger_test(
+        &logger,
+        "registry independence",
+        true);
     printf("[PASS] registry independence\n");
 
     test_temperature_sensor_create();
+    logger_test(
+        &logger,
+        "temperature sensor creation",
+        true);
     printf("[PASS] temperature sensor creation\n");
 
     test_temperature_sensor_ids();
+    logger_test(
+        &logger,
+        "temperature sensor IDs",
+        true);
     printf("[PASS] temperature sensor IDs\n");
 
     test_temperature_sensor_capacity();
+    logger_test(
+        &logger,
+        "temperature sensor capacity",
+        true);
     printf("[PASS] temperature sensor capacity\n");
 
     test_temperature_update();
+    logger_test(
+        &logger,
+        "temperature update",
+        true);
     printf("[PASS] temperature update\n");
 
     test_temperature_update_all();
+    logger_test(
+        &logger,
+        "temperature update all",
+        true);
     printf("[PASS] temperature update all\n");
 
     test_door_create();
+    logger_test(
+        &logger,
+        "door creation",
+        true);
     printf("[PASS] door creation\n");
 
     test_door_ids();
+    logger_test(
+        &logger,
+        "door IDs",
+        true);
     printf("[PASS] door IDs\n");
 
     test_door_capacity();
+    logger_test(
+        &logger,
+        "door capacity",
+        true);
     printf("[PASS] door capacity\n");
 
     test_door_open_close();
+    logger_test(
+        &logger,
+        "door open/close",
+        true);
     printf("[PASS] door open/close\n");
 
     test_invalid_door_transitions();
+    logger_test(
+        &logger,
+        "invalid door transitions",
+        true);
     printf("[PASS] invalid door transitions\n");
 
     test_alarm_create();
+    logger_test(
+        &logger,
+        "alarm creation",
+        true);
     printf("[PASS] alarm creation\n");
 
     test_alarm_invalid_door();
+    logger_test(
+        &logger,
+        "invalid alarm door",
+        true);
     printf("[PASS] invalid alarm door\n");
 
     test_alarm_capacity();
+    logger_test(
+        &logger,
+        "alarm capacity",
+        true);
     printf("[PASS] alarm capacity\n");
 
     test_alarm_trigger_clear();
+    logger_test(
+        &logger,
+        "alarm trigger/clear",
+        true);
     printf("[PASS] alarm trigger/clear\n");
 
     test_invalid_alarm_transitions();
+    logger_test(
+        &logger,
+        "invalid alarm transitions",
+        true);
     printf("[PASS] invalid alarm transitions\n");
 
     test_door_exists();
+    logger_test(
+        &logger,
+        "door existence check",
+        true);
     printf("[PASS] door existence check\n");
 
-    printf("=== ALL ENTITY TESTS PASSED ===\n");
+    logger_section(&logger, "SUMMARY");
+
+    fprintf(
+        logger.file,
+        "Passed: %d\n",
+        logger.passed);
+
+    fprintf(
+        logger.file,
+        "Failed: %d\n",
+        logger.failed);
+
+    printf("\n=== ALL ENTITY TESTS PASSED ===\n");
+    printf("Results written to blackbox_c/recordings/tests/test_entity.txt\n");
+
+    logger_destroy(&logger);
 
     return 0;
 }

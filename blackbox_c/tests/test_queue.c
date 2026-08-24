@@ -106,7 +106,7 @@ static void test_queue_capacity(Logger *logger)
 
 int main(void)
 {
-    Logger logger = logger_create("test_queue.txt");
+    Logger logger = logger_create("blackbox_c/recordings/tests/test_queue.txt");
 
     if (logger.file == NULL)
     {
