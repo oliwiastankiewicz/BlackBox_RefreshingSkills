@@ -1,0 +1,18 @@
+
+--- QUEUE TESTS ---
+[PASS] Queue initializes empty
+[PASS] New queue is not full
+[PASS] Queue size increases after push
+[PASS] Queue is no longer empty after push
+[PASS] Queue peek succeeds
+[PASS] Peek does not remove event
+[PASS] Queue pop succeeds
+[PASS] Pop removes event
+[PASS] Pop from empty queue fails
+[PASS] Queue preserves FIFO order
+[PASS] Queue reaches maximum capacity
+[PASS] Queue rejects push when full
+
+--- RESULT ---
+Passed: 12
+Failed: 0

@@ -29,7 +29,7 @@ Event event_create_invalid(void)
     return event;
 }
 
-const char *event_type_to_string(EventType type)
+static const char *event_type_to_string(EventType type)
 {
 
     switch (type)
