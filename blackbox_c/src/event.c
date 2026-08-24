@@ -57,9 +57,7 @@ void event_print(const Event *event)
 
     if (event->type == TEMPERATURE_READING)
     {
-        int degree_ascii = 248;
-        char degree = degree_ascii;
-        printf("%02d:%02d:%02d %s %.1f%c C entity = %d\n", time.hours, time.minutes, time.seconds, event_type, event->temperature, degree, event->entity.id);
+        printf("%02d:%02d:%02d %s %.1f°C entity = %d\n", time.hours, time.minutes, time.seconds, event_type, event->temperature, event->entity.id);
     }
     else
     {
@@ -75,9 +73,7 @@ void event_write_to_file(const Event *event, FILE *file)
 
     if (event->type == TEMPERATURE_READING)
     {
-        int degree_ascii = 248;
-        char degree = degree_ascii;
-        fprintf(file, "%02d:%02d:%02d %s %.1f%c C entity = %d\n", time.hours, time.minutes, time.seconds, event_type, event->temperature, degree, event->entity.id);
+        fprintf(file, "%02d:%02d:%02d %s %.1f°C entity = %d\n", time.hours, time.minutes, time.seconds, event_type, event->temperature, event->entity.id);
     }
     else
     {

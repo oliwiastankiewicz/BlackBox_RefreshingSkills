@@ -1,0 +1,31 @@
+BlackBox - Version 1
+
+--- ENTITIES ---
+Temperature sensors: 2
+Doors: 2
+Alarms: 1
+
+Sensors:
+  Sensor 0: entity 0
+  Sensor 1: entity 1
+
+Doors:
+  Door 0: entity 2 -> Alarm 0: entity 3
+  Door 1: entity 4 -> no alarm
+
+--- EVENTS ---
+00:00:00 TEMPERATURE_READING 23.0°C entity = 0
+00:00:00 TEMPERATURE_READING 22.5°C entity = 1
+00:00:00 DOOR_OPENED entity = 2
+00:00:00 ALARM_TRIGGERED entity = 3
+00:00:01 DOOR_CLOSED entity = 2
+00:00:01 ALARM_CLEARED entity = 3
+00:00:01 DOOR_OPENED entity = 4
+00:00:02 DOOR_OPENED entity = 2
+00:00:02 ALARM_TRIGGERED entity = 3
+00:00:02 DOOR_CLOSED entity = 4
+00:00:03 DOOR_CLOSED entity = 2
+00:00:03 ALARM_CLEARED entity = 3
+00:00:03 DOOR_OPENED entity = 4
+00:00:04 DOOR_OPENED entity = 2
+00:00:04 ALARM_TRIGGERED entity = 3

@@ -48,7 +48,54 @@ static bool entities_create(EntityRegistry *entity_registry, int nr_temperature_
     return true;
 }
 
-void simulation_run(int nr_temperature_sensors, int nr_doors_with_alarms, int nr_doors_without_alarms, Timestamp simulation_duration)
+static void simulation_write_file_header(FILE *file, EntityRegistry *entity_registry)
+{
+    fprintf(file, "BlackBox - Version 1\n\n");
+
+    fprintf(file, "--- ENTITIES ---\n");
+
+    fprintf(file, "Temperature sensors: %d\n", entity_registry->temperature_sensor_count);
+    fprintf(file, "Doors: %d\n", entity_registry->door_count);
+    fprintf(file, "Alarms: %d\n\n", entity_registry->alarm_count);
+
+    fprintf(file, "Sensors:\n");
+    for (int i = 0; i < entity_registry->temperature_sensor_count; i++)
+    {
+        fprintf(file, "  Sensor %d: entity %d\n", i, entity_registry->temperature_sensors[i].entity.id);
+    }
+
+    fprintf(file, "\nDoors:\n");
+    for (int i = 0; i < entity_registry->door_count; i++)
+    {
+        fprintf(file, "  Door %d: entity %d", i, entity_registry->doors[i].entity.id);
+
+        Alarm *alarm = NULL;
+
+        for (int j = 0; j < entity_registry->alarm_count; j++)
+        {
+            if (entity_registry->alarms[j].door_id == entity_registry->doors[i].entity.id)
+            {
+                alarm = &entity_registry->alarms[j];
+                break;
+            }
+        }
+
+        if (alarm != NULL)
+        {
+            fprintf(file, " -> Alarm %d: entity %d", i, alarm->entity.id);
+        }
+        else
+        {
+            fprintf(file, " -> no alarm");
+        }
+
+        fprintf(file, "\n");
+    }
+
+    fprintf(file, "\n--- EVENTS ---\n");
+}
+
+void simulation_run(const char *filename, int nr_temperature_sensors, int nr_doors_with_alarms, int nr_doors_without_alarms, Timestamp simulation_duration)
 {
 
     if (!timestamp_validate(simulation_duration.hours, simulation_duration.minutes, simulation_duration.seconds))
@@ -72,15 +119,15 @@ void simulation_run(int nr_temperature_sensors, int nr_doors_with_alarms, int nr
     Timestamp clock = timestamp_initialize();
     Queue queue = queue_create();
 
-    FILE *file;
-
-    file = fopen("SIMULATION_BlackBox.txt", "w");
+    FILE *file = fopen(filename, "w");
 
     if (file == NULL)
     {
-        printf("Error: File returned null!");
+        printf("Error: Could not open %s!\n", filename);
         return;
     }
+
+    simulation_write_file_header(file, &entity_registry);
 
     while (timestamp_compare(&clock, &simulation_duration) == -1)
     {
@@ -97,4 +144,6 @@ void simulation_run(int nr_temperature_sensors, int nr_doors_with_alarms, int nr
     }
 
     fclose(file);
+    printf("Simulation complete.\n");
+    printf("Output: %s\n", filename);
 }

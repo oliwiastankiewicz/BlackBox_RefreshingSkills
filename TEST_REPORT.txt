@@ -1,0 +1,75 @@
+BlackBox - Version 1
+Automated test report
+
+[PASS] Timestamp initializes to 00:00:00
+[PASS] Timestamp advances seconds correctly
+[PASS] Timestamp advances minutes correctly
+[PASS] Valid timestamp accepted
+[PASS] Invalid hours rejected
+[PASS] Invalid minutes rejected
+[PASS] Invalid seconds rejected
+[PASS] Timestamp comparison works
+[PASS] Registry initializes empty
+[PASS] Temperature sensors are created
+[PASS] Door is created
+[PASS] Alarm is created for existing door
+[PASS] Entity IDs are sequential
+[PASS] Door lookup finds existing door
+[PASS] Door lookup rejects nonexistent door
+[PASS] Registries are independent
+[PASS] Registry reset clears counts and IDs
+[PASS] Entity IDs restart after reset
+[PASS] Temperature sensors created for temperature tests
+[PASS] Initial temperature is correct
+[PASS] Temperature current value updates
+[PASS] Temperature minimum is tracked
+[PASS] Temperature maximum is tracked
+[PASS] temperature_update_all updates every sensor
+[PASS] temperature_update_all updates minimum
+[PASS] Temperature reading event is generated
+[PASS] Closed door can be opened
+[PASS] Opening an already-open door is rejected
+[PASS] Inactive alarm can be triggered
+[PASS] Triggering active alarm is rejected
+[PASS] Open door can be closed
+[PASS] Active alarm can be cleared
+[PASS] Closing an already-closed door is rejected
+[PASS] Clearing inactive alarm is rejected
+[PASS] Alarm for nonexistent door is rejected
+[PASS] New queue is empty
+[PASS] Queue size increases after push
+[PASS] Queue peek returns first event
+[PASS] Queue pop returns first event
+[PASS] Queue preserves FIFO order
+[PASS] Queue is empty after popping all events
+[PASS] Peek on empty queue fails
+[PASS] Pop on empty queue fails
+[PASS] Queue reaches maximum capacity
+[PASS] Queue rejects pushes when full
+[PASS] Temperature event has correct type
+[PASS] Temperature event contains temperature
+[PASS] Door event has correct type
+[PASS] Alarm event has correct type
+[PASS] Invalid event has invalid entity
+
+Representative events:
+00:00:00 TEMPERATURE_READING 25.5°C entity = 0
+00:00:00 DOOR_OPENED entity = 1
+00:00:00 ALARM_TRIGGERED entity = 2
+00:00:00 INVALID entity = -1
+[PASS] Temperature sensor limit is enforced
+[PASS] Door limit is enforced
+[PASS] Alarm limit is enforced
+[PASS] Scenario generates events
+[PASS] Scenario does not enqueue invalid events
+[PASS] Scenario leaves queue empty after processing
+
+Simulation files created:
+  SIMULATION_1.txt
+  SIMULATION_2.txt
+Invalid simulation inputs were tested.
+
+--- FINAL RESULT ---
+Tests passed: 56
+Tests failed: 0
+Result: ALL TESTS PASSED
