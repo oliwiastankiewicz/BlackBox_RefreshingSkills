@@ -31,7 +31,11 @@ Timestamp timestamp_create(int hours, int minutes, int seconds)
 {
     if (!timestamp_validate(hours, minutes, seconds))
     {
-        return timestamp_initialize();
+        Timestamp invalid;
+        invalid.seconds = -1;
+        invalid.minutes = -1;
+        invalid.hours = -1;
+        return invalid;
     }
 
     Timestamp current_time;

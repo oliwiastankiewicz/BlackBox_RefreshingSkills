@@ -5,6 +5,6 @@
 #include "queue.h"
 #include "timestamp.h"
 
-void scenario_generate(Queue *queue, Timestamp *timestamp);
+void scenario_generate(EntityRegistry *entity_registry, Queue *queue, Timestamp *timestamp);
 
 #endif

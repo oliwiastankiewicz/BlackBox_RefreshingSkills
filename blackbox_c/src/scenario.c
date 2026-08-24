@@ -18,13 +18,13 @@ static bool temperature_reading(Timestamp *timestamp)
     return timestamp->seconds % TEMPERATURE_READING_INTERVAL == 0;
 }
 
-static Alarm *alarm_attached(int door_id)
+static Alarm *alarm_attached(EntityRegistry *entity_registry, int door_id)
 {
-    for (int i = 0; i < entity_registry.alarm_count; i++)
+    for (int i = 0; i < entity_registry->alarm_count; i++)
     {
-        if (entity_registry.alarms[i].door_id == door_id)
+        if (entity_registry->alarms[i].door_id == door_id)
         {
-            return &entity_registry.alarms[i];
+            return &entity_registry->alarms[i];
         }
     }
 
@@ -38,24 +38,24 @@ static float generate_new_temperature(float current_temperature)
     return current_temperature + change;
 }
 
-void scenario_generate(Queue *queue, Timestamp *timestamp)
+void scenario_generate(EntityRegistry *entity_registry, Queue *queue, Timestamp *timestamp)
 {
 
-    for (int i = 0; i < entity_registry.temperature_sensor_count; i++)
+    for (int i = 0; i < entity_registry->temperature_sensor_count; i++)
     {
         if (probability_check(TEMPERATURE_CHANGE_PROBABILITY))
         {
-            float new_temperature = generate_new_temperature(entity_registry.temperature_sensors[i].current_temperature);
+            float new_temperature = generate_new_temperature(entity_registry->temperature_sensors[i].current_temperature);
 
-            temperature_update(&entity_registry.temperature_sensors[i], new_temperature);
+            temperature_update(&entity_registry->temperature_sensors[i], new_temperature);
         }
     }
 
     if (temperature_reading(timestamp))
     {
-        for (int i = 0; i < entity_registry.temperature_sensor_count; i++)
+        for (int i = 0; i < entity_registry->temperature_sensor_count; i++)
         {
-            Event event = generate_temperature_reading(timestamp, &entity_registry.temperature_sensors[i]);
+            Event event = generate_temperature_reading(timestamp, &entity_registry->temperature_sensors[i]);
 
             if (event.type != INVALID)
             {
@@ -64,19 +64,19 @@ void scenario_generate(Queue *queue, Timestamp *timestamp)
         }
     }
 
-    for (int i = 0; i < entity_registry.door_count; i++)
+    for (int i = 0; i < entity_registry->door_count; i++)
     {
-        if (entity_registry.doors[i].state == CLOSED)
+        if (entity_registry->doors[i].state == CLOSED)
         {
             if (probability_check(DOOR_OPEN_PROBABILITY))
             {
-                Event event = door_open(&entity_registry.doors[i], timestamp);
+                Event event = door_open(&entity_registry->doors[i], timestamp);
 
                 if (event.type != INVALID)
                 {
                     queue_push(queue, event);
 
-                    Alarm *alarm = alarm_attached(entity_registry.doors[i].entity.id);
+                    Alarm *alarm = alarm_attached(entity_registry, entity_registry->doors[i].entity.id);
 
                     if (alarm != NULL)
                     {
@@ -94,13 +94,13 @@ void scenario_generate(Queue *queue, Timestamp *timestamp)
         {
             if (probability_check(DOOR_CLOSE_PROBABILITY))
             {
-                Event event = door_close(&entity_registry.doors[i], timestamp);
+                Event event = door_close(&entity_registry->doors[i], timestamp);
 
                 if (event.type != INVALID)
                 {
                     queue_push(queue, event);
 
-                    Alarm *alarm = alarm_attached(entity_registry.doors[i].entity.id);
+                    Alarm *alarm = alarm_attached(entity_registry, entity_registry->doors[i].entity.id);
 
                     if (alarm != NULL)
                     {

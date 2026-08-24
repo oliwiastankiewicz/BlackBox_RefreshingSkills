@@ -68,8 +68,10 @@ typedef struct
     Alarm alarms[MAX_ALARMS];
     int alarm_count;
 
+    int next_entity_id;
+
 } EntityRegistry;
 
-extern EntityRegistry entity_registry;
+// extern EntityRegistry entity_registry;
 
 #endif

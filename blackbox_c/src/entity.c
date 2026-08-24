@@ -3,18 +3,48 @@
 
 #define INITIAL_TEMPERATURE 23
 
-int next_entity_id = 0;
+// int next_entity_id = 0;
 
-EntityRegistry entity_registry = {.temperature_sensor_count = 0, .door_count = 0, .alarm_count = 0};
+// EntityRegistry entity_registry = {.temperature_sensor_count = 0, .door_count = 0, .alarm_count = 0};
 
-TemperatureSensor *temperature_sensor_create()
+EntityRegistry entity_registry_initialize()
 {
-    if (entity_registry.temperature_sensor_count < MAX_TEMPERATURE_SENSORS)
+    EntityRegistry entity_registry;
+    entity_registry.alarm_count = 0;
+    entity_registry.door_count = 0;
+    entity_registry.temperature_sensor_count = 0;
+    entity_registry.next_entity_id = 0;
+    return entity_registry;
+}
+
+void entity_registry_reset(EntityRegistry *entity_registry)
+{
+    entity_registry->temperature_sensor_count = 0;
+    entity_registry->door_count = 0;
+    entity_registry->alarm_count = 0;
+    entity_registry->next_entity_id = 0;
+}
+
+bool entity_registry_check_door_exists(EntityRegistry *entity_registry, int door_id)
+{
+    for (int i = 0; i < entity_registry->door_count; i++)
+    {
+        if (entity_registry->doors[i].entity.id == door_id)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+TemperatureSensor *temperature_sensor_create(EntityRegistry *entity_registry)
+{
+    if (entity_registry->temperature_sensor_count < MAX_TEMPERATURE_SENSORS)
     {
         Entity entity;
-        entity.id = next_entity_id;
+        entity.id = entity_registry->next_entity_id;
         entity.type = TEMPERATURE_SENSOR;
-        entity.id_in_entity_registry_type = entity_registry.temperature_sensor_count;
+        entity.id_in_entity_registry_type = entity_registry->temperature_sensor_count;
 
         TemperatureSensor temperature_sensor;
         temperature_sensor.entity = entity;
@@ -23,11 +53,11 @@ TemperatureSensor *temperature_sensor_create()
         temperature_sensor.min_temperature = INITIAL_TEMPERATURE;
         temperature_sensor.max_temperature = INITIAL_TEMPERATURE;
 
-        entity_registry.temperature_sensors[entity_registry.temperature_sensor_count] = temperature_sensor;
-        entity_registry.temperature_sensor_count++;
-        next_entity_id++;
+        entity_registry->temperature_sensors[entity_registry->temperature_sensor_count] = temperature_sensor;
+        entity_registry->temperature_sensor_count++;
+        entity_registry->next_entity_id++;
 
-        return &entity_registry.temperature_sensors[entity_registry.temperature_sensor_count - 1];
+        return &entity_registry->temperature_sensors[entity_registry->temperature_sensor_count - 1];
     }
     else
         return NULL;
@@ -56,21 +86,21 @@ void temperature_update(TemperatureSensor *temperature_sensor, float temperature
     }
 }
 
-void temperature_update_all(float temperature)
+void temperature_update_all(EntityRegistry *entity_registry, float temperature)
 {
-    for (int i = 0; i < entity_registry.temperature_sensor_count; i++)
+    for (int i = 0; i < entity_registry->temperature_sensor_count; i++)
     {
-        temperature_update(&entity_registry.temperature_sensors[i], temperature);
+        temperature_update(&entity_registry->temperature_sensors[i], temperature);
     }
 }
 
-Door *door_create()
+Door *door_create(EntityRegistry *entity_registry)
 {
-    if (entity_registry.door_count < MAX_DOORS)
+    if (entity_registry->door_count < MAX_DOORS)
     {
         Entity entity;
-        entity.id = next_entity_id;
-        entity.id_in_entity_registry_type = entity_registry.door_count;
+        entity.id = entity_registry->next_entity_id;
+        entity.id_in_entity_registry_type = entity_registry->door_count;
         entity.type = DOOR;
 
         Door door;
@@ -78,11 +108,11 @@ Door *door_create()
         door.entity = entity;
         door.state = CLOSED;
 
-        entity_registry.doors[entity_registry.door_count] = door;
-        entity_registry.door_count++;
-        next_entity_id++;
+        entity_registry->doors[entity_registry->door_count] = door;
+        entity_registry->door_count++;
+        entity_registry->next_entity_id++;
 
-        return &entity_registry.doors[entity_registry.door_count - 1];
+        return &entity_registry->doors[entity_registry->door_count - 1];
     }
     else
         return NULL;
@@ -108,40 +138,31 @@ Event door_close(Door *door, Timestamp *timestamp)
     return event_create(*timestamp, DOOR_CLOSED, door->entity);
 }
 
-Alarm *alarm_create(int door_id)
+Alarm *alarm_create(EntityRegistry *entity_registry, int door_id)
 {
-    if (entity_registry.alarm_count >= MAX_ALARMS)
+    if (entity_registry->alarm_count >= MAX_ALARMS)
         return NULL;
 
-    bool door_exists = false;
-
-    for (int i = 0; i < entity_registry.door_count; i++)
+    if (!entity_registry_check_door_exists(entity_registry, door_id))
     {
-        if (entity_registry.doors[i].entity.id == door_id)
-        {
-            door_exists = true;
-            break;
-        }
+        return NULL;
     }
 
-    if (!door_exists)
-        return NULL;
-
     Entity entity;
-    entity.id = next_entity_id;
+    entity.id = entity_registry->next_entity_id;
     entity.type = ALARM;
-    entity.id_in_entity_registry_type = entity_registry.alarm_count;
+    entity.id_in_entity_registry_type = entity_registry->alarm_count;
 
     Alarm alarm;
     alarm.entity = entity;
     alarm.door_id = door_id;
     alarm.state = INACTIVE;
 
-    entity_registry.alarms[entity_registry.alarm_count] = alarm;
-    entity_registry.alarm_count++;
-    next_entity_id++;
+    entity_registry->alarms[entity_registry->alarm_count] = alarm;
+    entity_registry->alarm_count++;
+    entity_registry->next_entity_id++;
 
-    return &entity_registry.alarms[entity_registry.alarm_count - 1];
+    return &entity_registry->alarms[entity_registry->alarm_count - 1];
 }
 
 Event alarm_trigger(Alarm *alarm, Timestamp *timestamp)

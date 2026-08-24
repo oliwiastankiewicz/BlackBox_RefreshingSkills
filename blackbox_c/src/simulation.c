@@ -16,11 +16,11 @@ static bool simulation_input_validate(int nr_temperature_sensors, int nr_doors_w
     return false;
 }
 
-static bool entities_create(int nr_temperature_sensors, int nr_doors_with_alarms, int nr_doors_without_alarms)
+static bool entities_create(EntityRegistry *entity_registry, int nr_temperature_sensors, int nr_doors_with_alarms, int nr_doors_without_alarms)
 {
     for (int i = 0; i < nr_temperature_sensors; i++)
     {
-        if (temperature_sensor_create() == NULL)
+        if (temperature_sensor_create(entity_registry) == NULL)
         {
             return false;
         }
@@ -28,11 +28,11 @@ static bool entities_create(int nr_temperature_sensors, int nr_doors_with_alarms
 
     for (int i = 0; i < nr_doors_with_alarms; i++)
     {
-        if (door_create() == NULL)
+        if (door_create(entity_registry) == NULL)
         {
             return false;
         }
-        if (alarm_create(entity_registry.doors[i].entity.id) == NULL)
+        if (alarm_create(entity_registry, entity_registry->doors[i].entity.id) == NULL)
         {
             return false;
         }
@@ -40,7 +40,7 @@ static bool entities_create(int nr_temperature_sensors, int nr_doors_with_alarms
 
     for (int i = 0; i < nr_doors_without_alarms; i++)
     {
-        if (door_create() == NULL)
+        if (door_create(entity_registry) == NULL)
         {
             return false;
         }
@@ -50,6 +50,7 @@ static bool entities_create(int nr_temperature_sensors, int nr_doors_with_alarms
 
 void simulation_run(int nr_temperature_sensors, int nr_doors_with_alarms, int nr_doors_without_alarms, Timestamp simulation_duration)
 {
+
     if (!timestamp_validate(simulation_duration.hours, simulation_duration.minutes, simulation_duration.seconds))
     {
         printf("Incorrect simulation duration!");
@@ -61,7 +62,8 @@ void simulation_run(int nr_temperature_sensors, int nr_doors_with_alarms, int nr
         return;
     }
 
-    if (!entities_create(nr_temperature_sensors, nr_doors_with_alarms, nr_doors_without_alarms))
+    EntityRegistry entity_registry = entity_registry_initialize();
+    if (!entities_create(&entity_registry, nr_temperature_sensors, nr_doors_with_alarms, nr_doors_without_alarms))
     {
         printf("Failed to create entities!");
         return;
@@ -82,7 +84,7 @@ void simulation_run(int nr_temperature_sensors, int nr_doors_with_alarms, int nr
 
     while (timestamp_compare(&clock, &simulation_duration) == -1)
     {
-        scenario_generate(&queue, &clock);
+        scenario_generate(&entity_registry, &queue, &clock);
 
         Event popped_event;
         while (queue_pop(&queue, &popped_event))
