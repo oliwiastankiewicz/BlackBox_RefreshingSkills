@@ -10,7 +10,8 @@ OBJECTS = blackbox_c/build/main.o \
           blackbox_c/build/timestamp.o \
           blackbox_c/build/entity.o \
 		  blackbox_c/build/scenario.o \
-          blackbox_c/build/simulation.o
+          blackbox_c/build/simulation.o \
+          blackbox_c/build/logger.o
 
 .PHONY: all run clean
 
@@ -67,6 +68,10 @@ blackbox_c/build/simulation.o: blackbox_c/src/simulation.c \
                              blackbox_c/include/event.h \
                              blackbox_c/include/entity_base.h
 	$(CC) $(CFLAGS) -c blackbox_c/src/simulation.c -o blackbox_c/build/simulation.o
+
+blackbox_c/build/logger.o: blackbox_c/src/logger.c \
+                            blackbox_c/include/logger.h
+	$(CC) $(CFLAGS) -c blackbox_c/src/logger.c -o blackbox_c/build/logger.o
 
 run: $(TARGET)
 	./$(TARGET)
