@@ -1,9 +1,15 @@
 CC = gcc
-
 CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -Iblackbox_c/include
+
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra -Wpedantic -Iblackbox_cpp/include -Iblackbox_c/include
+
 
 BUILD = blackbox_c/build
 TEST_BUILD = blackbox_c/build/tests
+
+CPP_BUILD = blackbox_cpp/build
+CPP_TEST_BUILD = blackbox_cpp/build/tests
 
 TARGET = $(BUILD)/blackbox.exe
 
@@ -34,11 +40,14 @@ TEST_TARGETS = \
 	$(TEST_BUILD)/test_simulation.exe \
 	$(TEST_BUILD)/test_logger.exe
 
+CPP_TEST_TARGETS = $(CPP_TEST_BUILD)/test_serializer.exe
+
+
 # ---------------------------------------------------------
 # Phony targets
 # ---------------------------------------------------------
 
-.PHONY: all run test clean
+.PHONY: all run test cpp-test all-tests clean
 
 # ---------------------------------------------------------
 # Default target
@@ -109,6 +118,13 @@ $(BUILD)/simulation.o: blackbox_c/src/simulation.c \
 $(BUILD)/logger.o: blackbox_c/src/logger.c \
                    blackbox_c/include/logger.h
 	$(CC) $(CFLAGS) -c blackbox_c/src/logger.c -o $(BUILD)/logger.o
+
+
+$(CPP_BUILD)/serializer.o: blackbox_cpp/src/serializer.cpp \
+                           blackbox_cpp/include/serializer.h \
+                           blackbox_c/include/event.h
+	if not exist "$(CPP_BUILD)" mkdir "$(CPP_BUILD)"
+	$(CXX) $(CXXFLAGS) -c blackbox_cpp/src/serializer.cpp -o $(CPP_BUILD)/serializer.o
 
 # ---------------------------------------------------------
 # Test directory
@@ -234,6 +250,29 @@ $(TEST_BUILD)/test_logger.exe: blackbox_c/tests/test_logger.c \
 		$(BUILD)/logger.o \
 		-o $(TEST_BUILD)/test_logger.exe
 
+
+# ---------------------------------------------------------
+# C++ tests
+# ---------------------------------------------------------
+
+$(CPP_TEST_BUILD):
+	if not exist "$(CPP_TEST_BUILD)" mkdir "$(CPP_TEST_BUILD)"
+
+# ---------------------------------------------------------
+# Serializer tests
+# ---------------------------------------------------------
+
+$(CPP_TEST_BUILD)/test_serializer.exe: blackbox_cpp/tests/test_serializer.cpp \
+                                       $(CPP_BUILD)/serializer.o \
+                                       $(BUILD)/event.o \
+                                       $(BUILD)/timestamp.o \
+                                       | $(CPP_TEST_BUILD)
+	$(CXX) $(CXXFLAGS) blackbox_cpp/tests/test_serializer.cpp \
+		$(CPP_BUILD)/serializer.o \
+		$(BUILD)/event.o \
+		$(BUILD)/timestamp.o \
+		-o $(CPP_TEST_BUILD)/test_serializer.exe
+
 # ---------------------------------------------------------
 # Run all tests
 # ---------------------------------------------------------
@@ -258,6 +297,23 @@ test: $(TEST_TARGETS)
 	@echo All tests finished
 	@echo =========================
 
+
+cpp-test: $(CPP_TEST_TARGETS)
+	@echo.
+	@echo =========================
+	@echo Running C++ tests
+	@echo =========================
+	@echo.
+
+	$(CPP_TEST_BUILD)/test_serializer.exe
+
+	@echo.
+	@echo =========================
+	@echo C++ tests finished
+	@echo =========================
+
+all-tests: test cpp-test
+
 # ---------------------------------------------------------
 # Run main program
 # ---------------------------------------------------------
@@ -273,3 +329,5 @@ clean:
 	if exist "$(BUILD)\*.o" del /Q "$(BUILD)\*.o"
 	if exist "$(BUILD)\blackbox.exe" del /Q "$(BUILD)\blackbox.exe"
 	if exist "$(TEST_BUILD)\*.exe" del /Q "$(TEST_BUILD)\*.exe"
+	if exist "$(CPP_BUILD)\*.o" del /Q "$(CPP_BUILD)\*.o"
+	if exist "$(CPP_TEST_BUILD)\*.exe" del /Q "$(CPP_TEST_BUILD)\*.exe"
