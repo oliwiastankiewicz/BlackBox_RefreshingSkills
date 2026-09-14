@@ -125,8 +125,7 @@ blackbox_c/\
 │ ├── queue.h\
 │ ├── scenario.h\
 │ ├── simulation.h\
-│ ├── timestamp.h\
-│ └── serializer.h\
+│ └── timestamp.h\
 │\
 ├── src/\
 │ ├── entity.c\
@@ -136,8 +135,7 @@ blackbox_c/\
 │ ├── queue.c\
 │ ├── scenario.c\
 │ ├── simulation.c\
-│ ├── timestamp.c\
-│ └── serializer.c\
+│ └── timestamp.c\
 │\
 ├── tests/\
 │ ├── test_entity.c\
