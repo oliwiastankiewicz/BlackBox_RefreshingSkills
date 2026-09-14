@@ -53,11 +53,11 @@ C: Simulation Engine
 - event generation
 - simulation clock
 - deterministic simulation
-- event serialization
 - logging
 
 C++: Event Processing Engine
 
+- event serialization
 - event parsing
 - event validation
 - event filtering
