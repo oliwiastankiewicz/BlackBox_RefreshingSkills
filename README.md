@@ -4,62 +4,87 @@ A local event-processing and simulation system.
 
 This project is a way for me to refresh and improve my programming skills in C, C++, C#, Python and Typescript by using the same underlying problem with a different architectural emphasis in each language.
 
-             ┌──────────────┐
-             │ C Engine     │
-             └──────┬───────┘
-                    │
-                    ▼
-             event recording
-                    │
-       ┌────────────┼─────────────┐
-       ▼            ▼             ▼
-    C++ engine    Python       C# server
-                    │             │
-                    │             ▼
-                    │        TypeScript UI
-                    │
-                    ▼
-                 analysis
+PHASE 1
+C
+│
+└── Generate deterministic event streams
+        │
+        ▼
+PHASE 2
+C++
+│
+├── Consume event streams
+├── Process events
+├── Optimize processing
+├── Add concurrency
+└── Benchmark
+        │
+        ▼
+PHASE 3
+C#
+│
+├── Store results
+├── Manage simulations
+├── HTTP API
+└── Async jobs
+        │
+        ├──────────────┐
+        ▼              ▼
+PHASE 4              PHASE 5
+Python               TypeScript
+│                    │
+├── Analysis         ├── REST
+├── Statistics       ├── WebSockets
+├── Reports          ├── Visualization
+└── Graphs           └── Replay
 
 ---
 
-C: Core
+C: Simulation Engine
 
-- event representation
-- event queue
+- entity model
+- event generation
 - simulation clock
-- event processor
+- deterministic simulation
+- event serialization
 - logging
 
-C++: Performance
+C++: Event Processing Engine
 
-- better data structures
-- generic components
+- event parsing
+- event validation
+- event filtering
+- event aggregation
+- state reconstruction
+- generic data structures
 - concurrency
 - benchmarking
 
-C#: Application architecture
+C#: Application Layer
 
 - HTTP API
 - persistence
+- simulation management
 - async processing
 - dependency injection
 - automated tests
 
-Phyton: Data
+Phyton: Analytics
 
-- parsers
+- event parsing
 - statistics
+- anomaly detection
+- performance analysis
 - visualization
-- profiling
 - automated reports
 
 TypeScript: Interface
 
-- REST
+- REST client
 - WebSockets
 - live visualization
 - event filtering
+- simulation timeline
 - replay controls
 
 ## Version 1: Event-Driven Simulation Engine in C
@@ -100,7 +125,8 @@ blackbox_c/\
 │ ├── queue.h\
 │ ├── scenario.h\
 │ ├── simulation.h\
-│ └── timestamp.h\
+│ ├── timestamp.h\
+│ └── serializer.h\
 │\
 ├── src/\
 │ ├── entity.c\
@@ -110,7 +136,8 @@ blackbox_c/\
 │ ├── queue.c\
 │ ├── scenario.c\
 │ ├── simulation.c\
-│ └── timestamp.c\
+│ ├── timestamp.c\
+│ └── serializer.c\
 │\
 ├── tests/\
 │ ├── test_entity.c\
