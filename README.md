@@ -7,16 +7,23 @@ This project is a way for me to refresh and improve my programming skills in C, 
 PHASE 1
 C
 │
-└── Generate deterministic event streams
+├── Generate simulation
+├── Maintain simulation state
+├── Generate events
+└── Record raw event stream
         │
         ▼
 PHASE 2
 C++
 │
-├── Consume event streams
-├── Process events
-├── Optimize processing
-├── Add concurrency
+├── Parse
+├── Validate
+├── Transform
+├── Process
+├── Aggregate
+├── Reconstruct state
+├── Optimize
+├── Parallelize
 └── Benchmark
         │
         ▼
@@ -196,3 +203,15 @@ Simulation complete.
 
 Processed events: 42
 Simulation time: 00:12:43
+
+## Version 2: Event Processing Engine in C++
+
+Goal: Build a C++ event-processing engine that consumes event streams produced by the C simulation engine.
+
+blackbox_cpp/\
+├── include/\
+│   └── serializer.h\
+├── src/\
+│   └── serializer.cpp\
+└── tests/\
+    └── test_serializer.cpp
